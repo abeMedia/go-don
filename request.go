@@ -62,7 +62,7 @@ func decodeBody[V any]() requestDecoder[V] {
 			return nil
 		}
 
-		dec := encoding.GetDecoder(getMediaType(ctx.Request.Header.ContentType()))
+		dec := encoding.GetDecoder(ctx.Request.Header.ContentType())
 		if dec == nil {
 			return ErrUnsupportedMediaType
 		}

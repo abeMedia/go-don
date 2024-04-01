@@ -1,12 +1,10 @@
 package don
 
 import (
-	"bytes"
 	"context"
 	"net/http"
 
 	"github.com/abemedia/go-don/encoding"
-	"github.com/abemedia/go-don/internal/byteconv"
 	"github.com/abemedia/httprouter"
 	"github.com/valyala/fasthttp"
 )
@@ -31,9 +29,7 @@ func H[T, O any](handle Handle[T, O]) httprouter.Handle {
 	isNil := newNilCheck(*new(O))
 
 	return func(ctx *fasthttp.RequestCtx, p httprouter.Params) {
-		contentType := getMediaType(ctx.Request.Header.Peek(fasthttp.HeaderAccept))
-
-		enc := encoding.GetEncoder(contentType)
+		enc := encoding.GetEncoder(ctx.Request.Header.Peek(fasthttp.HeaderAccept))
 		if enc == nil {
 			handleError(ctx, ErrNotAcceptable)
 			return
@@ -52,8 +48,6 @@ func H[T, O any](handle Handle[T, O]) httprouter.Handle {
 			}
 		}
 		pool.Put(req)
-
-		ctx.SetContentType(contentType + "; charset=utf-8")
 
 		if h, ok := res.(Headerer); ok {
 			for k, v := range h.Header() {
@@ -84,15 +78,6 @@ func handleError(ctx *fasthttp.RequestCtx, err error) {
 	}
 	ctx.Error(fasthttp.StatusMessage(code), code)
 	ctx.Logger().Printf("%v", err)
-}
-
-func getMediaType(b []byte) string {
-	index := bytes.IndexRune(b, ';')
-	if index > 0 {
-		b = b[:index]
-	}
-
-	return byteconv.Btoa(bytes.TrimSpace(b))
 }
 
 func getStatusCode(i any, fallback int) int {

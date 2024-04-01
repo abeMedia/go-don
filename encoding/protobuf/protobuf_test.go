@@ -26,9 +26,10 @@ func TestProtobuf(t *testing.T) {
 func TestProtobufError(t *testing.T) {
 	ctx := httptest.NewRequest("", "", "", nil)
 	v := "test"
+	mime := []byte("application/protobuf")
 
 	t.Run("Decode", func(t *testing.T) {
-		dec := encoding.GetDecoder("application/protobuf")
+		dec := encoding.GetDecoder(mime)
 		err := dec(ctx, &v)
 		if !errors.Is(err, don.ErrUnsupportedMediaType) {
 			t.Fatal("should fail")
@@ -36,7 +37,7 @@ func TestProtobufError(t *testing.T) {
 	})
 
 	t.Run("Encode", func(t *testing.T) {
-		enc := encoding.GetEncoder("application/protobuf")
+		enc := encoding.GetEncoder(mime)
 		err := enc(ctx, &v)
 		if !errors.Is(err, don.ErrNotAcceptable) {
 			t.Fatal("should fail")

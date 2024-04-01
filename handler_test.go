@@ -90,9 +90,9 @@ func TestHandlerResponse(t *testing.T) {
 			message: "should return null",
 			want: response{
 				Code: fasthttp.StatusOK,
-				Body: "null",
+				Body: "null\n",
 				Header: map[string]string{
-					"Content-Type": "application/json; charset=utf-8",
+					"Content-Type": "application/json",
 				},
 			},
 			config: &don.Config{DefaultEncoding: "application/json", DisableNoContent: true},

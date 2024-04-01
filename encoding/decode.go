@@ -1,46 +1,28 @@
 package encoding
 
 import (
-	"context"
+	"bytes"
 
+	"github.com/abemedia/go-don/internal/byteconv"
 	"github.com/valyala/fasthttp"
 )
 
-type (
-	Unmarshaler        = func(data []byte, v any) error
-	ContextUnmarshaler = func(ctx context.Context, data []byte, v any) error
-	RequestParser      = func(ctx *fasthttp.RequestCtx, v any) error
-)
-
-type DecoderConstraint interface {
-	Unmarshaler | ContextUnmarshaler | RequestParser
-}
+type RequestDecoder = func(ctx *fasthttp.RequestCtx, v any) error
 
 // RegisterDecoder registers a request decoder for a given media type.
-func RegisterDecoder[T DecoderConstraint](dec T, mime string, aliases ...string) {
-	switch d := any(dec).(type) {
-	case Unmarshaler:
-		decoders[mime] = func(ctx *fasthttp.RequestCtx, v any) error {
-			return d(ctx.Request.Body(), v)
-		}
-
-	case ContextUnmarshaler:
-		decoders[mime] = func(ctx *fasthttp.RequestCtx, v any) error {
-			return d(ctx, ctx.Request.Body(), v)
-		}
-
-	case RequestParser:
-		decoders[mime] = d
-	}
-
+func RegisterDecoder(dec RequestDecoder, mime string, aliases ...string) {
+	decoders[mime] = dec
 	for _, alias := range aliases {
-		decoders[alias] = decoders[mime]
+		decoders[alias] = dec
 	}
 }
 
 // GetDecoder returns the request decoder for a given media type.
-func GetDecoder(mime string) RequestParser {
-	return decoders[mime]
+func GetDecoder(mime []byte) RequestDecoder {
+	if i := bytes.IndexByte(mime, ';'); i > 0 {
+		mime = mime[:i]
+	}
+	return decoders[byteconv.Btoa(bytes.TrimSpace(mime))]
 }
 
-var decoders = map[string]RequestParser{}
+var decoders = map[string]RequestDecoder{}

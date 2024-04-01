@@ -12,7 +12,7 @@ type item struct {
 
 var opt = test.EncodingOptions[item]{
 	Mime:   "application/xml",
-	Raw:    "<item><foo>bar</foo></item>",
+	Raw:    "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<item><foo>bar</foo></item>",
 	Parsed: item{Foo: "bar"},
 }
 

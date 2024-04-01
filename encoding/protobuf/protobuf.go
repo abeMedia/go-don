@@ -7,6 +7,7 @@ import (
 
 	"github.com/abemedia/go-don"
 	"github.com/abemedia/go-don/encoding"
+	"github.com/valyala/fasthttp"
 	"google.golang.org/protobuf/proto"
 )
 
@@ -15,7 +16,7 @@ var (
 	cache       sync.Map
 )
 
-func unmarshal(b []byte, v any) error {
+func decode(ctx *fasthttp.RequestCtx, v any) error {
 	typ := reflect.TypeOf(v)
 	fn, ok := cache.Load(typ)
 	if !ok {
@@ -26,26 +27,30 @@ func unmarshal(b []byte, v any) error {
 		}
 		cache.Store(typ, fn)
 	}
-
 	m, ok := fn.(func(v any) any)(v).(proto.Message)
 	if !ok {
 		return don.ErrUnsupportedMediaType
 	}
-	return proto.Unmarshal(b, m)
+	return proto.Unmarshal(ctx.Request.Body(), m)
 }
 
-func marshal(v any) ([]byte, error) {
+func encode(ctx *fasthttp.RequestCtx, v any) error {
+	ctx.SetContentType("application/protobuf")
 	m, ok := v.(proto.Message)
 	if !ok {
-		return nil, don.ErrNotAcceptable
+		return don.ErrNotAcceptable
 	}
-	return proto.Marshal(m)
+	b, err := proto.Marshal(m)
+	if err == nil {
+		ctx.Response.SetBodyRaw(b)
+	}
+	return err
 }
 
 func init() {
 	mediaType := "application/protobuf"
 	alias := "application/x-protobuf"
 
-	encoding.RegisterDecoder(unmarshal, mediaType, alias)
-	encoding.RegisterEncoder(marshal, mediaType, alias)
+	encoding.RegisterDecoder(decode, mediaType, alias)
+	encoding.RegisterEncoder(encode, mediaType, alias)
 }

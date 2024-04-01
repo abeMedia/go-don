@@ -40,7 +40,7 @@ func TestDecode(t *testing.T) {
 		{"test\n", &unmarshaler{S: "test"}},
 	}
 
-	dec := encoding.GetDecoder("text/plain")
+	dec := encoding.GetDecoder([]byte("text/plain"))
 	if dec == nil {
 		t.Fatal("decoder not found")
 	}
@@ -69,7 +69,7 @@ func TestDecodeError(t *testing.T) {
 		{"test\n", &unmarshaler{Err: io.EOF}, io.EOF},
 	}
 
-	dec := encoding.GetDecoder("text/plain")
+	dec := encoding.GetDecoder([]byte("text/plain"))
 	if dec == nil {
 		t.Fatal("decoder not found")
 	}
