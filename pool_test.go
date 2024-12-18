@@ -61,3 +61,62 @@ func TestRequestPool(t *testing.T) {
 		}
 	})
 }
+
+func BenchmarkPool(b *testing.B) {
+	type item struct {
+		String  string
+		Pointer *string
+	}
+	b.Run("Struct", func(b *testing.B) {
+		pool := don.NewRequestPool(item{})
+		for i := 0; i < b.N; i++ {
+			pool.Put(pool.Get())
+		}
+	})
+	b.Run("Pointer", func(b *testing.B) {
+		pool := don.NewRequestPool(new(item))
+		for i := 0; i < b.N; i++ {
+			pool.Put(pool.Get())
+		}
+	})
+}
+
+func BenchmarkPool_New(b *testing.B) {
+	type item struct {
+		String  string
+		Pointer *string
+	}
+	b.Run("Struct", func(b *testing.B) {
+		pool := don.NewRequestPool(item{})
+		for i := 0; i < b.N; i++ {
+			don.PoolNew(pool)
+		}
+	})
+	b.Run("Pointer", func(b *testing.B) {
+		pool := don.NewRequestPool(new(item))
+		for i := 0; i < b.N; i++ {
+			don.PoolNew(pool)
+		}
+	})
+}
+
+func BenchmarkPool_Reset(b *testing.B) {
+	type item struct {
+		String  string
+		Pointer *string
+	}
+	b.Run("Struct", func(b *testing.B) {
+		pool := don.NewRequestPool(item{})
+		x := item{}
+		for i := 0; i < b.N; i++ {
+			don.PoolReset(pool, &x)
+		}
+	})
+	b.Run("Pointer", func(b *testing.B) {
+		pool := don.NewRequestPool(new(item))
+		x := new(item)
+		for i := 0; i < b.N; i++ {
+			don.PoolReset(pool, &x)
+		}
+	})
+}
