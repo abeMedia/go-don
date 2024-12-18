@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.2.2](https://github.com/abemedia/go-don/compare/v0.2.1...v0.2.2) (2024-12-18)
+
+
+### Bug Fixes
+
+* **encoding:** take the first encoding supported ([#205](https://github.com/abemedia/go-don/issues/205)) ([3f53fd0](https://github.com/abemedia/go-don/commit/3f53fd061cacbc748e891baf998a91a972a5b37d))
+
 ## [0.2.1](https://github.com/abemedia/go-don/compare/v0.2.0...v0.2.1) (2023-06-04)
 
 
