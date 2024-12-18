@@ -4,11 +4,21 @@ package toml
 import (
 	"github.com/abemedia/go-don/encoding"
 	"github.com/pelletier/go-toml"
+	"github.com/valyala/fasthttp"
 )
+
+func decode(ctx *fasthttp.RequestCtx, v any) error {
+	return toml.NewDecoder(ctx.RequestBodyStream()).Decode(v)
+}
+
+func encode(ctx *fasthttp.RequestCtx, v any) error {
+	ctx.SetContentType("application/toml; charset=utf-8")
+	return toml.NewEncoder(ctx).Encode(v)
+}
 
 func init() {
 	mediaType := "application/toml"
 
-	encoding.RegisterDecoder(toml.Unmarshal, mediaType)
-	encoding.RegisterEncoder(toml.Marshal, mediaType)
+	encoding.RegisterDecoder(decode, mediaType)
+	encoding.RegisterEncoder(encode, mediaType)
 }

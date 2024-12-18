@@ -7,11 +7,12 @@ import (
 	"gopkg.in/yaml.v3"
 )
 
-func decodeYAML(ctx *fasthttp.RequestCtx, v any) error {
+func decode(ctx *fasthttp.RequestCtx, v any) error {
 	return yaml.NewDecoder(ctx.RequestBodyStream()).Decode(v)
 }
 
-func encodeYAML(ctx *fasthttp.RequestCtx, v any) error {
+func encode(ctx *fasthttp.RequestCtx, v any) error {
+	ctx.SetContentType("application/yaml")
 	return yaml.NewEncoder(ctx).Encode(v)
 }
 
@@ -19,6 +20,6 @@ func init() {
 	mediaType := "application/yaml"
 	aliases := []string{"text/yaml", "application/x-yaml", "text/x-yaml", "text/vnd.yaml"}
 
-	encoding.RegisterDecoder(decodeYAML, mediaType, aliases...)
-	encoding.RegisterEncoder(encodeYAML, mediaType, aliases...)
+	encoding.RegisterDecoder(decode, mediaType, aliases...)
+	encoding.RegisterEncoder(encode, mediaType, aliases...)
 }

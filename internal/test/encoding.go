@@ -102,7 +102,7 @@ func BenchmarkEncoding[T any](b *testing.B, opt EncodingOptions[T]) {
 func BenchmarkDecode[T any](b *testing.B, opt EncodingOptions[T]) {
 	b.Helper()
 
-	dec := encoding.GetDecoder(opt.Mime)
+	dec := encoding.GetDecoder([]byte(opt.Mime))
 	if dec == nil {
 		b.Fatal("decoder not found")
 	}
@@ -125,7 +125,7 @@ func BenchmarkDecode[T any](b *testing.B, opt EncodingOptions[T]) {
 func BenchmarkEncode[T any](b *testing.B, opt EncodingOptions[T]) {
 	b.Helper()
 
-	enc := encoding.GetEncoder(opt.Mime)
+	enc := encoding.GetEncoder([]byte(opt.Mime))
 	if enc == nil {
 		b.Fatal("encoder not found")
 	}

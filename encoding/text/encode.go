@@ -12,6 +12,8 @@ import (
 
 //nolint:cyclop,funlen
 func encode(ctx *fasthttp.RequestCtx, v any) error {
+	ctx.SetContentType("text/plain; charset=utf-8")
+
 	if v == nil {
 		return nil
 	}

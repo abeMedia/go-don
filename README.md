@@ -181,7 +181,7 @@ as your request & response structs.
 
 ### Adding custom encoding
 
-Adding your own is easy. See [encoding/json/json.go](./encoding/json/json.go).
+Adding your own is easy. See [encoding/xml/xml.go](./encoding/xml/xml.go) for an example.
 
 ## Request parsing
 

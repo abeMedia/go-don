@@ -39,7 +39,7 @@ func TestEncode(t *testing.T) {
 		{&stringer{}, "test"},
 	}
 
-	enc := encoding.GetEncoder("text/plain")
+	enc := encoding.GetEncoder([]byte("text/plain"))
 	if enc == nil {
 		t.Fatal("encoder not found")
 	}
@@ -65,7 +65,7 @@ func TestEncodeError(t *testing.T) {
 		{marshaler{err: io.EOF}, io.EOF},
 	}
 
-	enc := encoding.GetEncoder("text/plain")
+	enc := encoding.GetEncoder([]byte("text/plain"))
 	if enc == nil {
 		t.Fatal("encoder not found")
 	}

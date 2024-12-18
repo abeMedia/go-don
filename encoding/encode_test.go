@@ -1,7 +1,6 @@
 package encoding_test
 
 import (
-	"context"
 	"io"
 	"testing"
 
@@ -11,45 +10,19 @@ import (
 )
 
 func TestRegisterEncoder(t *testing.T) {
-	t.Run("Marshaler", func(t *testing.T) {
-		testRegisterEncoder(t, func(v any) ([]byte, error) {
-			b := v.([]byte)
-			if len(b) == 0 {
-				return nil, io.EOF
-			}
-			return b, nil
-		}, "unmarshaler", "marshaler-alias")
-	})
+	enc := func(ctx *fasthttp.RequestCtx, v any) error {
+		b := v.([]byte)
+		if len(b) == 0 {
+			return io.EOF
+		}
+		ctx.Response.SetBodyRaw(b)
+		return nil
+	}
 
-	t.Run("ContextMarshaler", func(t *testing.T) {
-		testRegisterEncoder(t, func(ctx context.Context, v any) ([]byte, error) {
-			b := v.([]byte)
-			if len(b) == 0 {
-				return nil, io.EOF
-			}
-			return b, nil
-		}, "context-marshaler", "context-marshaler-alias")
-	})
+	encoding.RegisterEncoder(enc, "response-encoder", "response-encoder-alias")
 
-	t.Run("ResponseEncoder", func(t *testing.T) {
-		testRegisterEncoder(t, func(ctx *fasthttp.RequestCtx, v any) error {
-			b := v.([]byte)
-			if len(b) == 0 {
-				return io.EOF
-			}
-			ctx.Response.SetBodyRaw(b)
-			return nil
-		}, "response-encoder", "response-encoder-alias")
-	})
-}
-
-func testRegisterEncoder[T encoding.EncoderConstraint](t *testing.T, dec T, contentType, alias string) {
-	t.Helper()
-
-	encoding.RegisterEncoder(dec, contentType, alias)
-
-	for _, v := range []string{contentType, alias} {
-		encode := encoding.GetEncoder(v)
+	for _, v := range []string{"response-encoder", "response-encoder-alias"} {
+		encode := encoding.GetEncoder([]byte(v))
 		if encode == nil {
 			t.Error("encoder not found")
 			continue
@@ -69,19 +42,19 @@ func testRegisterEncoder[T encoding.EncoderConstraint](t *testing.T, dec T, cont
 	}
 }
 
-func TestGetEncoderMultipleContentTypes(t *testing.T) {
+func TestGetEncoder_MultipleContentTypes(t *testing.T) {
 	encFn := func(ctx *fasthttp.RequestCtx, v any) error {
 		return nil
 	}
 
 	encoding.RegisterEncoder(encFn, "application/xml")
 
-	enc := encoding.GetEncoder("text/html,application/xhtml+xml,application/xml")
+	enc := encoding.GetEncoder([]byte("text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8"))
 	if enc == nil {
 		t.Fatal("encoder not found")
 	}
 
-	enc = encoding.GetEncoder("application/xhtml+xml")
+	enc = encoding.GetEncoder([]byte("application/xhtml+xml"))
 	if enc != nil {
 		t.Fatal("encoder should not be found")
 	}
