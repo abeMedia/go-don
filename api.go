@@ -47,6 +47,8 @@ type Config struct {
 	// DisableNoContent controls whether a nil or zero value response should
 	// automatically return 204 No Content with an empty body.
 	DisableNoContent bool
+
+	ForceDefaultEncoding bool
 }
 
 // New creates a new API instance.
@@ -129,14 +131,18 @@ func (r *API) RequestHandler() fasthttp.RequestHandler {
 	}
 
 	return func(ctx *fasthttp.RequestCtx) {
-		ct := ctx.Request.Header.ContentType()
-		if len(ct) == 0 || bytes.HasPrefix(ct, anyEncoding) {
+		if r.config.ForceDefaultEncoding {
 			ctx.Request.Header.SetContentType(r.config.DefaultEncoding)
-		}
-
-		ac := ctx.Request.Header.Peek(fasthttp.HeaderAccept)
-		if len(ac) == 0 || bytes.HasPrefix(ac, anyEncoding) {
 			ctx.Request.Header.Set(fasthttp.HeaderAccept, r.config.DefaultEncoding)
+		} else {
+			contentType := ctx.Request.Header.ContentType()
+			if len(contentType) == 0 || bytes.HasPrefix(contentType, anyEncoding) {
+				ctx.Request.Header.SetContentType(r.config.DefaultEncoding)
+			}
+			accept := ctx.Request.Header.Peek(fasthttp.HeaderAccept)
+			if len(accept) == 0 || bytes.HasPrefix(accept, anyEncoding) {
+				ctx.Request.Header.Set(fasthttp.HeaderAccept, r.config.DefaultEncoding)
+			}
 		}
 
 		h(ctx)
